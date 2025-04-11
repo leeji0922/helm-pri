@@ -40,6 +40,10 @@ filebeat:
     host: "elasticsearch:9200"
     username: "elastic"
     password: "changeme"
+  kibana:
+    host: "kibana:5601"
+    username: "elastic"
+    password: "changeme"
 
 # Node selector
 nodeSelector: {}
