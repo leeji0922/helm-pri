@@ -1,0 +1,64 @@
+# Common settings
+nameOverride: ""
+namespace: "default"
+
+# Deployment settings
+deployment:
+  resources:
+    request:
+      cpu: 100m
+      mem: 1G
+    limit:
+      cpu: 500m
+      mem: 4G
+  replicas: 1
+  containerPort: 8080
+  protocol: TCP
+  runAsUser: 1000
+  runAsGroup: 1000
+
+# Image settings
+image:
+  repository: ""
+  tag: "latest"
+  pullPolicy: Always
+  secretName: ""
+
+# Service settings
+service:
+  port: 8080
+  targetPort: 8080
+  type: ClusterIP
+
+# Filebeat settings
+filebeat:
+  enabled: true
+  image: elastic/filebeat:7.17.2
+  configMapName: "{{ .Release.Name }}-filebeat-config"
+  secretName: "{{ .Release.Name }}-filebeat-secret"
+  elasticsearch:
+    host: "elasticsearch:9200"
+    username: "elastic"
+    password: "changeme"
+
+# Node selector
+nodeSelector: {}
+
+# Affinity
+affinity: {}
+
+# Tolerations
+tolerations: []
+
+# Pod security context
+podSecurityContext:
+  fsGroup: 1000
+
+# Container security context
+securityContext:
+  capabilities:
+    drop:
+      - ALL
+  readOnlyRootFilesystem: true
+  runAsNonRoot: true  runAsUser: 1000
+  runAsGroup: 1000

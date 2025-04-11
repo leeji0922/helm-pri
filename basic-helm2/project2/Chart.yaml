@@ -1,0 +1,11 @@
+apiVersion: v2
+name: project2
+description: A Helm chart for project2
+type: application
+version: 0.1.0
+appVersion: "1.0.0"
+
+dependencies:
+  - name: common
+    version: 0.1.0
+    repository: file://../common 
