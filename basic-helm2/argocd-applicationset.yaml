@@ -38,7 +38,7 @@ spec:
         path: basic-helm2/{{project}}
         helm:
           valueFiles:
-            - values.yaml
+            - ../common/values.yaml
             - values/{{profiles.name}}.yaml
       destination:
         server: https://kubernetes.default.svc

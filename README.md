@@ -89,6 +89,7 @@ basic-helm2/
              syncPolicy: {}
              branch: main
    ```
+   해당 파일은 배포서버에서 관리
 
 3. ArgoCD ApplicationSet 업데이트:
    ```bash
