@@ -1,5 +1,6 @@
 # Application name settings
 nameOverride: "project2"
+fullnameOverride: "project2-prod"
 namespace: "project2-prod"
 
 # Environment type
@@ -31,7 +32,7 @@ image:
 service:
   port: 8022
   targetPort: 8022
-  type: LoadBalancer
+  type: ClusterIP
 
 # Filebeat settings
 filebeat:

@@ -1,5 +1,6 @@
 # Application name settings
 nameOverride: "project1"
+fullnameOverride: "project1-prod"
 namespace: "project1-prod"
 
 # Environment type
