@@ -5,7 +5,7 @@ metadata:
   name: {{ include "common.fullname" . }}-filebeat-config
   namespace: {{ .Values.namespace }}
   labels:
-    {{- include "common.labels" . | nindent 4 }}
+    {{- include "common.configLabels" . | nindent 4 }}
 data:
   filebeat.yml: |
     filebeat.inputs:
