@@ -1,110 +1,105 @@
-# Helm 차트 사용 안내
+# Helm Chart with ArgoCD
 
-## 1. 차트 설치
+이 프로젝트는 Helm 차트와 ArgoCD를 사용한 Kubernetes 애플리케이션 배포를 위한 템플릿입니다.
 
-### 개발 환경 설치
-```bash
-# project1 개발 환경 설치
-helm install project1-dev ./project1 -f ./project1/values/dev.yaml
+## 프로젝트 구조
 
-# project2 개발 환경 설치
-helm install project2-dev ./project2 -f ./project2/values/dev.yaml
+```
+basic-helm2/
+├── project1/              # Project1 Helm 차트
+│   ├── Chart.yaml        # Helm 차트 메타데이터
+│   ├── values.yaml       # 기본 values
+│   ├── templates/        # Kubernetes 리소스 템플릿
+│   └── values/           # 환경별 values
+│       ├── dev.yaml      # 개발 환경 설정
+│       └── prod.yaml     # 프로덕션 환경 설정
+├── project2/              # Project2 Helm 차트
+│   ├── Chart.yaml
+│   ├── values.yaml
+│   ├── templates/
+│   └── values/
+│       ├── dev.yaml
+│       └── prod.yaml
+└── argocd-applicationset.yaml  # ArgoCD ApplicationSet 정의
 ```
 
-### 운영 환경 설치
-```bash
-# project1 운영 환경 설치
-helm install project1-prod ./project1 -f ./project1/values/prod.yaml
+## 환경별 설정
 
-# project2 운영 환경 설치
-helm install project2-prod ./project2 -f ./project2/values/prod.yaml
-```
+### 개발 환경 (dev)
+- 브랜치: `develop`
+- 자동 배포: 비활성화 (Jenkins에서 수동 배포)
 
-## 2. 설정 관리
+### 프로덕션 환경 (prod)
+- 브랜치: `main`
+- 자동 배포: 비활성화 (수동 배포)
 
-### Filebeat 설정
-Filebeat 설정은 다음과 같은 순서로 우선순위가 적용됩니다:
-1. 환경별 설정 (`values/dev.yaml` 또는 `values/prod.yaml`)
-2. 프로젝트별 설정 (`values.yaml`)
-3. 공통 설정 (`common/values.yaml`)
+## 이미지 태그 관리
+- 버전 번호 형식 사용 (예: 1.0.0)
+- 각 배포마다 고유한 버전 번호 부여
+- 문제 발생 시 특정 버전으로 롤백 가능
 
-#### Filebeat 활성화/비활성화
-```yaml
-# values.yaml 또는 환경별 values 파일에서
-filebeat:
-  enabled: true  # 또는 false
-```
+## 배포 프로세스
 
-#### Elasticsearch 설정 변경
-```yaml
-# values.yaml 또는 환경별 values 파일에서
-filebeat:
-  elasticsearch:
-    host: "your-elasticsearch:9200"
-    username: "your-username"
-    password: "your-password"
-```
+### 개발 환경 배포
+1. `develop` 브랜치에 변경사항 푸시
+2. Jenkins 파이프라인 실행
+3. Jenkins에서 ArgoCD 싱크 명령어 실행:
+   ```bash
+   argocd app sync project1-dev
+   # 또는
+   argocd app sync project2-dev
+   ```
 
-## 3. 주의사항
+### 프로덕션 환경 배포
+1. `main` 브랜치에 변경사항 푸시
+2. ArgoCD 웹 UI 또는 CLI에서 수동으로 싱크:
+   ```bash
+   argocd app sync project1-prod
+   # 또는
+   argocd app sync project2-prod
+   ```
 
-### 보안
-- Elasticsearch 접속 정보는 Secret으로 관리됩니다.
-- 프로덕션 환경에서는 반드시 기본 비밀번호를 변경해야 합니다.
-- 민감한 정보는 values 파일에 직접 작성하지 않고, Secret으로 관리하는 것을 권장합니다.
+## 새로운 프로젝트 추가
 
-### 리소스 관리
-- 개발 환경과 운영 환경의 리소스 요청/제한이 다르게 설정되어 있습니다.
-- 운영 환경에서는 더 많은 리소스가 할당됩니다.
-- 필요에 따라 `values.yaml`에서 리소스 설정을 조정할 수 있습니다.
+1. 새로운 프로젝트 폴더 생성:
+   ```
+   basic-helm2/
+   └── project3/
+       ├── Chart.yaml
+       ├── values.yaml
+       ├── templates/
+       └── values/
+           ├── dev.yaml
+           └── prod.yaml
+   ```
 
-### 로그 관리
-- Filebeat는 sidecar 패턴으로 배포됩니다.
-- 각 애플리케이션의 로그는 독립적인 인덱스로 저장됩니다.
-- 로그 인덱스 이름은 `{프로젝트명}-{날짜}` 형식입니다.
+2. `argocd-applicationset.yaml` 파일에 새 프로젝트 추가:
+   ```yaml
+   generators:
+     - list:
+         elements:
+         - project: project3
+           profiles:
+           - name: dev
+             namespace: project3-dev
+             syncPolicy: {}
+             branch: develop
+           - name: prod
+             namespace: project3-prod
+             syncPolicy: {}
+             branch: main
+   ```
 
-## 4. 문제 해결
+3. ArgoCD ApplicationSet 업데이트:
+   ```bash
+   kubectl apply -f basic-helm2/argocd-applicationset.yaml
+   ```
 
-### 로그 수집 문제
-1. Filebeat Pod 상태 확인
-```bash
-kubectl get pods -n {네임스페이스} -l app.kubernetes.io/name={프로젝트명}
-```
+## 모니터링 및 로깅
+- Filebeat 설정 포함
+- 각 프로젝트별 독립적인 ConfigMap과 Secret 사용
+- 환경별로 다른 Elasticsearch/Kibana 설정 가능
 
-2. Filebeat 로그 확인
-```bash
-kubectl logs -n {네임스페이스} {파드명} -c filebeat
-```
-
-3. ConfigMap과 Secret 확인
-```bash
-kubectl get configmap,secret -n {네임스페이스} -l app.kubernetes.io/name={프로젝트명}
-```
-
-### 설정 변경 후
-1. ConfigMap과 Secret 업데이트 확인
-```bash
-kubectl describe configmap {configmap명} -n {네임스페이스}
-kubectl describe secret {secret명} -n {네임스페이스}
-```
-
-2. Filebeat Pod 재시작
-```bash
-kubectl rollout restart deployment {배포명} -n {네임스페이스}
-```
-
-## 5. 유지보수
-
-### 차트 업그레이드
-```bash
-# 차트 의존성 업데이트
-helm dependency update ./project1
-helm dependency update ./project2
-
-# 차트 업그레이드
-helm upgrade {릴리즈명} ./{차트경로} -f ./{차트경로}/values/{환경}.yaml
-```
-
-### 차트 제거
-```bash
-helm uninstall {릴리즈명} -n {네임스페이스}
-```
+## 노드 셀렉터
+- 개발 환경: `type: dev`
+- 프로덕션 환경: `type: prod`
