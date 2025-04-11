@@ -1,0 +1,48 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: projects
+  namespace: argocd
+spec:
+  generators:
+  - list:
+      elements:
+      - project: project1
+        profiles:
+        - name: dev
+          namespace: project1-dev
+          syncPolicy: {}
+          branch: develop
+        - name: prod
+          namespace: project1-prod
+          syncPolicy: {}
+          branch: main
+      - project: project2
+        profiles:
+        - name: dev
+          namespace: project2-dev
+          syncPolicy: {}
+          branch: develop
+        - name: prod
+          namespace: project2-prod
+          syncPolicy: {}
+          branch: main
+  template:
+    metadata:
+      name: '{{project}}-{{profiles.name}}'
+    spec:
+      project: default
+      source:
+        repoURL: https://github.com/your-repo/helm-pri.git
+        targetRevision: '{{profiles.branch}}'
+        path: basic-helm2/{{project}}
+        helm:
+          valueFiles:
+            - values.yaml
+            - values/{{profiles.name}}.yaml
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: '{{profiles.namespace}}'
+      syncPolicy: '{{profiles.syncPolicy}}'
+      syncOptions:
+        - CreateNamespace=true 

@@ -36,9 +36,6 @@ service:
 # Filebeat settings
 filebeat:
   enabled: true
-  image: elastic/filebeat:7.17.2
-  configMapName: "project1-filebeat-config"
-  secretName: "project1-filebeat-secret"
 
 # Node selector
 nodeSelector:

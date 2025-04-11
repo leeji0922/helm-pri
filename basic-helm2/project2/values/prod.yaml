@@ -9,11 +9,11 @@ environment: "prod"
 deployment:
   resources:
     request:
-      cpu: 100m
-      mem: 1G
-    limit:
       cpu: 500m
-      mem: 4G
+      mem: 1Gi
+    limit:
+      cpu: 2000m
+      mem: 4Gi
   replicas: 3
   containerPort: 8022
   protocol: TCP
@@ -22,8 +22,8 @@ deployment:
 
 # Image settings
 image:
-  repository: "076248830837.dkr.ecr.ap-northeast-2.amazonaws.com/project2"
-  tag: "stable"
+  repository: "076248830837.dkr.ecr.ap-northeast-2.amazonaws.com/project2-prod"
+  tag: "1.0.0"
   pullPolicy: Always
   secretName: "ap-northeast-2-ecr-registry"
 
@@ -31,7 +31,7 @@ image:
 service:
   port: 8022
   targetPort: 8022
-  type: ClusterIP
+  type: LoadBalancer
 
 # Filebeat settings
 filebeat:

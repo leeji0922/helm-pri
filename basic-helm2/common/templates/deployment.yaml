@@ -24,7 +24,7 @@ spec:
         {{- toYaml . | nindent 8 }}
         {{- end }}
       containers:
-        - name: {{ .Chart.Name }}
+        - name: {{ include "common.name" . }}
           securityContext:
             {{- with .Values.securityContext }}
             {{- toYaml . | nindent 12 }}
@@ -61,10 +61,10 @@ spec:
         {{- if .Values.filebeat.enabled }}
         - name: filebeat-config
           configMap:
-            name: {{ .Values.filebeat.configMapName }}
+            name: {{ include "common.fullname" . }}-filebeat-config
         - name: filebeat-secret
           secret:
-            secretName: {{ .Values.filebeat.secretName }}
+            secretName: {{ include "common.fullname" . }}-filebeat-secret
         {{- end }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
