@@ -31,7 +31,7 @@ image:
 service:
   port: 8022
   targetPort: 8022
-  type: LoadBalancer
+  type: ClusterIP
 
 # Filebeat settings
 filebeat:
