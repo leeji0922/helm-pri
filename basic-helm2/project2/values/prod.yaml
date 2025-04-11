@@ -31,7 +31,7 @@ image:
 service:
   port: 8022
   targetPort: 8022
-  type: ClusterIP
+  type: LoadBalancer
 
 # Filebeat settings
 filebeat:
@@ -42,4 +42,16 @@ filebeat:
 
 # Node selector
 nodeSelector:
-  type: "prod" 
+  type: "prod"
+
+spring:
+  profiles:
+    active: prod
+
+db:
+  dev:
+    username: ""
+    password: ""
+  prod:
+    username: "prod_user"
+    password: "prod_password" 
