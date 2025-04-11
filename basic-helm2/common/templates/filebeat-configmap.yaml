@@ -1,1 +1,37 @@
- 
+ {{- if .Values.filebeat.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "common.fullname" . }}-filebeat-config
+  namespace: {{ .Values.namespace }}
+  labels:
+    {{- include "common.labels" . | nindent 4 }}
+data:
+  filebeat.yml: |
+    filebeat.inputs:
+    - type: log
+      enabled: true
+      paths:
+        - /app/logs/*.log
+      fields:
+        app: {{ include "common.name" . }}
+        environment: {{ .Values.environment }}
+      fields_under_root: true
+
+    output.elasticsearch:
+      hosts: ["${ELASTICSEARCH_HOST}"]
+      username: "${ELASTICSEARCH_USERNAME}"
+      password: "${ELASTICSEARCH_PASSWORD}"
+      index: "{{ include "common.name" . }}-%{+yyyy.MM.dd}"
+    
+    output.kibana:
+      hosts: ["${KIBANA_HOST}"]
+      username: "${KIBANA_USERNAME}"
+      password: "${KIBANA_PASSWORD}"
+      index: "{{ include "common.name" . }}-%{+yyyy.MM.dd}"
+
+    setup.template.name: "{{ include "common.name" . }}"
+    setup.template.pattern: "{{ include "common.name" . }}-*"
+    setup.template.enabled: true
+    setup.template.overwrite: true
+{{- end }}
